@@ -28,7 +28,7 @@ endif
 all: repack-final timer
 
 build:
-	@$(BR_MAKE) all -j$(shell nproc)
+	@$(BR_MAKE) all
 
 br-%: defconfig
 	@$(BR_MAKE) $(subst br-,,$@) -j$(shell nproc)
