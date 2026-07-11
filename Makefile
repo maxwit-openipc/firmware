@@ -27,7 +27,7 @@ endif
 
 all: repack-final timer
 
-build: defconfig
+build:
 	@$(BR_MAKE) all -j$(shell nproc)
 
 br-%: defconfig
@@ -38,6 +38,10 @@ defconfig: prepare
 	@cat $(CONFIG) $(PWD)/general/openipc.fragment > $(BR_CONF)
 	@grep -s '^BR2_GLOBAL_PATCH_DIR=' $(CONFIG) >> $(BR_CONF) || true
 	@$(BR_MAKE) BR2_DEFCONFIG=$(BR_CONF) defconfig
+
+menuconfig: prepare
+	@echo --- $(or $(CONFIG),$(error variable BOARD not found))
+	@$(BR_MAKE) menuconfig
 
 prepare:
 	@if test ! -e $(TARGET)/buildroot-$(BR_VER); then \
