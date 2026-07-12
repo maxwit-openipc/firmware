@@ -45,3 +45,10 @@ grep -q BR2_PACKAGE_MDNSD general/openipc.fragment || cat >> general/openipc.fra
 BR2_PACKAGE_MDNSD_OPENIPC=y
 BR2_PACKAGE_MDNSD_MQUERY_OPENIPC=y
 __EOF__
+
+# .github/workflows/build.yml
+# Makefile
+# general/overlay/etc/init.d/S40network
+# general/overlay/lib/modules/4.9.84/sigmastar/sensor_jxq03_mipi.ko
+# general/overlay/usr/sbin/sysupgrade
+# general/package/quirc-openipc/files/qrscan.sh
