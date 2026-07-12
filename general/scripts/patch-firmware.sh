@@ -1,12 +1,36 @@
 #!/usr/bin/env bash
 
-for family in infinity6b0 hi3516ev200 gk7205v200
+vendor_list=${1:-"hisilicon goke sigmastar"}
+
+# Vendor-specific
+
+for vendor in $vendor_list
 do
-	sed -i -e 's/\(^CONFIG_ARM_APPENDED_DTB\)=y/# \1 is not set/' \
-		-e 's/\(^CONFIG_SS_BUILTIN_DTB\)=y/# \1 is not set/' \
-		-e 's/\(^CONFIG_ATAGS\)=y/# \1 is not set/' \
-		-e '/CONFIG_ARM_ATAG_DTB_COMPAT/d' \
-		-e '/CONFIG_SS_DTB_NAME/d' \
-		br-ext-chip-*/board/$family/*.config
+    sed -i -e 's/\(^CONFIG_ARM_APPENDED_DTB\)=y/# \1 is not set/' \
+        -e 's/\(^CONFIG_SS_BUILTIN_DTB\)=y/# \1 is not set/' \
+        -e 's/\(^CONFIG_ATAGS\)=y/# \1 is not set/' \
+        -e '/CONFIG_ARM_ATAG_DTB_COMPAT/d' \
+        -e '/CONFIG_SS_DTB_NAME/d' \
+        br-ext-chip-$vendor/board/*/*.config
+
+    for conf in br-ext-chip-$vendor/configs/*ultimate_defconfig # skip lite_defconfig
+    do
+        for xc in BR2_PACKAGE_RTL8188FU_OPENIPC=y \
+            BR2_PACKAGE_LIBGPIOD=y \
+            BR2_PACKAGE_LIBGPIOD_TOOLS=y
+        do
+            grep -q ^$xc $conf || echo $xc >> $conf
+        done
+
+        xc="BR2_TARGET_ROOTFS_UBIFS=y"
+        grep -q ^$xc $conf || sed -i '/^BR2_TARGET_ROOTFS_CPIO=y/a BR2_TARGET_ROOTFS_UBIFS=y' $conf
+    done
 done
 
+# Common
+
+xc='$MODALIAS=usb:v0BDApF179d0000dc00dsc00dp00icFFiscFFipFFin00 root:root 660 @modprobe $MODALIAS'
+conf=general/overlay/etc/mdev.conf
+grep -q v0BDApF179 $conf || echo "$xc" >> $conf
+
+sed -i 's/\(^[^#]*ifconfig.*fw_printenv -n ipaddr.*\)/# \1/' general/overlay/usr/share/udhcpc/default.script
