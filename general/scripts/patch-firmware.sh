@@ -26,17 +26,17 @@ do
         grep -q ^$xc $conf || sed -i '/^BR2_TARGET_ROOTFS_CPIO=y/a BR2_TARGET_ROOTFS_UBIFS=y' $conf
     done
 
-    if [ $vendor == sigmastar ]; then
-        sed -i 's/^\(\s\+detect_sensor\)/# \1/' \
-            general/package/sigmastar-osdrv-infinity*/files/script/load_sigmastar
-    fi
+    # if [ $vendor == sigmastar ]; then
+    #     sed -i 's/^\(\s\+detect_sensor\)/# \1/' \
+    #         general/package/sigmastar-osdrv-infinity*/files/script/load_sigmastar
+    # fi
 done
 
 # Common Fix
 
 xc='$MODALIAS=usb:v0BDApF179d0000dc00dsc00dp00icFFiscFFipFFin00 root:root 660 @modprobe $MODALIAS'
 conf=general/overlay/etc/mdev.conf
-grep -q v0BDApF179 $conf || echo "$xc" >> $conf
+grep -q v0BDApF179 $conf || echo -e "\n$xc" >> $conf
 
 sed -i 's/\(^[^#]*ifconfig.*fw_printenv -n ipaddr.*\)/# \1/' general/overlay/usr/share/udhcpc/default.script
 
@@ -47,7 +47,6 @@ BR2_PACKAGE_MDNSD_MQUERY_OPENIPC=y
 __EOF__
 
 # .github/workflows/build.yml
-# Makefile
 # general/overlay/etc/init.d/S40network
 # general/overlay/lib/modules/4.9.84/sigmastar/sensor_jxq03_mipi.ko
 # general/overlay/usr/sbin/sysupgrade
