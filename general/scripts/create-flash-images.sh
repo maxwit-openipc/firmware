@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash -e
 
 if [ $# -gt 0 ]; then
 	dest=$1
@@ -10,12 +10,12 @@ flash_size=$((16 << 20))
 
 for soc in `ls $dest`
 do
-	if [ ! -d $dest/$soc ]; then
+	if [ ! -d "$dest/$soc" ]; then
 		continue
 	fi
 
 	case $soc in
-		hi351[68]ev[23]00 | gk720[25]v[23][01]0)
+		hi351[68][acde]v* | gk720[25]v* | ssc3*)
 			;;
 		*)
 			# echo "Skip '$soc' dir!"
@@ -23,17 +23,18 @@ do
 			;;
 	esac
 
-	echo "### $soc ###" | tr a-z A-Z
+    echo -e "## \033[1;32m$(echo ${soc} | tr a-z A-Z)\033[0m"
 
 	plat_dir=$dest/$soc
 
-	for uboot_image in $plat_dir/u-boot-*.bin
+	for uboot_image in `ls $plat_dir/u-boot-*.bin | grep -v nand`
 	do
-		flash_image=$(echo $uboot_image | sed 's/u-boot/openipc/')
+        board=`basename ${uboot_image%.bin}`
+        board=${board#u-boot-}
+        echo -e "### \033[1;33m${board}\033[0m"
 
-		if test -f $flash_image; then
-			echo "Overwriting $flash_image ..."
-		fi
+		flash_image=$(echo $uboot_image | sed 's/u-boot/openipc/')
+		# test -f $flash_image && echo "Overwriting $flash_image ..."
 		echo "Generating $uboot_image => $flash_image ..."
 		python3 -c "import sys; sys.stdout.buffer.write(b'\xff' * $flash_size)" > $flash_image
 		dd if=$uboot_image of=$flash_image conv=notrunc
