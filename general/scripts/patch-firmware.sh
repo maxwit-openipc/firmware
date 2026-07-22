@@ -6,30 +6,48 @@ vendor_list=${1:-"hisilicon goke sigmastar"}
 
 for vendor in $vendor_list
 do
-    sed -i -e 's/\(^CONFIG_ARM_APPENDED_DTB\)=y/# \1 is not set/' \
-        -e 's/\(^CONFIG_SS_BUILTIN_DTB\)=y/# \1 is not set/' \
-        -e 's/\(^CONFIG_ATAGS\)=y/# \1 is not set/' \
-        -e '/CONFIG_ARM_ATAG_DTB_COMPAT/d' \
-        -e '/CONFIG_SS_DTB_NAME/d' \
-        br-ext-chip-$vendor/board/*/*.config
+    echo -e "## \033[1;32m$vendor\033[0m"
+
+    for conf in br-ext-chip-$vendor/board/*/*.config
+    do
+        echo "Patching $conf ..."
+        # to disable
+        for opt in CONFIG_ARM_APPENDED_DTB \
+            CONFIG_ATAGS \
+            CONFIG_ARM_ATAG_DTB_COMPAT  \
+            CONFIG_SS_BUILTIN_DTB \
+            CONFIG_SS_DTB_NAME
+        do
+            sed -i "s/^$opt=y/# $opt is not set/" $conf
+        done
+
+        # to enable
+        for opt in CONFIG_NEW_LEDS CONFIG_LEDS_CLASS CONFIG_LEDS_GPIO
+        do
+            sed -i "s/^# $opt is not set/$opt=y/" $conf
+            grep -q ^$opt $conf || echo "$opt=y" >> $conf
+        done
+    done
 
     for conf in br-ext-chip-$vendor/configs/*ultimate_defconfig # skip lite_defconfig
     do
-        for xc in BR2_PACKAGE_RTL8188FU_OPENIPC=y \
+        echo "Patching $conf ..."
+        # to enable
+        for opt in BR2_PACKAGE_RTL8188FU_OPENIPC=y \
             BR2_PACKAGE_LIBGPIOD=y \
+            BR2_TARGET_ROOTFS_UBIFS=y \
             BR2_PACKAGE_LIBGPIOD_TOOLS=y
         do
-            grep -q ^$xc $conf || echo $xc >> $conf
+            grep -q ^$opt $conf || echo $opt >> $conf
         done
-
-        xc="BR2_TARGET_ROOTFS_UBIFS=y"
-        grep -q ^$xc $conf || sed -i '/^BR2_TARGET_ROOTFS_CPIO=y/a BR2_TARGET_ROOTFS_UBIFS=y' $conf
     done
 
     # if [ $vendor == sigmastar ]; then
     #     sed -i 's/^\(\s\+detect_sensor\)/# \1/' \
     #         general/package/sigmastar-osdrv-infinity*/files/script/load_sigmastar
     # fi
+
+    echo
 done
 
 # Common Fix
