@@ -11,6 +11,15 @@ do
     for conf in br-ext-chip-$vendor/board/*/*.config
     do
         echo "Patching $conf ..."
+
+        # to enable
+        for opt in CONFIG_DEBUG_FS \
+            CONFIG_NEW_LEDS CONFIG_LEDS_CLASS CONFIG_LEDS_GPIO
+        do
+            sed -i "s/^# $opt is not set/$opt=y/" $conf
+            grep -q ^$opt $conf || echo "$opt=y" >> $conf
+        done
+
         # to disable
         for opt in CONFIG_ARM_APPENDED_DTB \
             CONFIG_ATAGS \
@@ -19,13 +28,6 @@ do
             CONFIG_SS_DTB_NAME
         do
             sed -i "s/^$opt=y/# $opt is not set/" $conf
-        done
-
-        # to enable
-        for opt in CONFIG_NEW_LEDS CONFIG_LEDS_CLASS CONFIG_LEDS_GPIO
-        do
-            sed -i "s/^# $opt is not set/$opt=y/" $conf
-            grep -q ^$opt $conf || echo "$opt=y" >> $conf
         done
     done
 
