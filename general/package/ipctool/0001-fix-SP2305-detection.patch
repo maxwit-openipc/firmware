@@ -1,0 +1,26 @@
+From fb91a57fcacd4a693c95a2210caffd8e6ed38f7e Mon Sep 17 00:00:00 2001
+From: Conke Hu <conke.hu@maxwit.com>
+Date: Fri, 31 Jul 2026 16:22:22 +0800
+Subject: [PATCH] fix SP2305 detection
+
+Signed-off-by: Conke Hu <conke.hu@maxwit.com>
+---
+ src/sensors.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/sensors.c b/src/sensors.c
+index 4e96ddd..9339f5e 100644
+--- a/src/sensors.c
++++ b/src/sensors.c
+@@ -906,7 +906,7 @@ static int detect_superpix_sensor(sensor_ctx_t *ctx, int fd,
+         return true;
+     // Omnivision-SuperPix OV2735
+     case 0x2735:
+-        sprintf(ctx->sensor_id, "OV%04x", res);
++        strcpy(ctx->sensor_id, "SP2305");
+         return true;
+     case 0x4308:
+         sprintf(ctx->sensor_id, "OS04B10");
+-- 
+2.43.0
+
